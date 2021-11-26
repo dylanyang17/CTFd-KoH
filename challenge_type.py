@@ -1,4 +1,5 @@
-import math
+import base64
+import requests
 
 from flask import Blueprint
 
@@ -87,8 +88,12 @@ class KoHChallengeType(BaseChallenge):
     @classmethod
     def attempt(cls, challenge, request):
         data = request.form or request.get_json()
-        fileExtension = data.get('submission').split('.')[-1]
 
+        fileName = data.get('submission')
+        if len(fileName) == 0:
+            return False, 'No file'
+
+        fileExtension = fileName.split('.')[-1]
         if fileExtension not in challenge.allowed_suffixes.split(','):
             return False, 'Disallowed file extension'
 
@@ -96,7 +101,17 @@ class KoHChallengeType(BaseChallenge):
 
     @classmethod
     def solve(cls, user, team, challenge, request):
-        pass
+        data = request.form or request.get_json()
+        try:
+            file_encode = data.get('content')
+            file_encode = file_encode.split(';base64,')[-1]
+            file = base64.b64decode(file_encode)
+            score = int(requests.post(challenge.checker_url, file, timeout=(5, 10)).text)
+        except:
+            score = 0
+
+        print('Score:', score)
+        
         # print('file: ', request.form.get('submission'))
         # super().solve(user, team, challenge, request)
 

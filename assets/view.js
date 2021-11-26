@@ -17,6 +17,30 @@ CTFd._internal.challenge.submit = function (preview) {
     var challenge_id = parseInt(CTFd.lib.$('#challenge-id').val())
     var submission_file = CTFd.lib.$('#challenge-input')[0].files[0]
 
+    if (submission_file === undefined) {
+        var body = {
+            'challenge_id': challenge_id,
+            'submission': '',
+            'content': '',
+        }
+        var params = {}
+        if (preview) {
+            params['preview'] = true
+        }
+
+        return CTFd.api.post_challenge_attempt(params, body).then(function (response) {
+            if (response.status === 429) {
+                // User was ratelimited but process response
+                return response
+            }
+            if (response.status === 403) {
+                // User is not logged in or CTF is paused.
+                return response
+            }
+            return response
+        })
+    }
+
     function file2base64(file) {
         return new Promise(function (resolve, reject) {
             let reader = new FileReader()

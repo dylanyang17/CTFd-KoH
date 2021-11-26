@@ -90,7 +90,7 @@ class KoHChallengeType(BaseChallenge):
 
     @classmethod
     def solve(cls, user, team, challenge, request):
-        pass
+        print('file: ', request.form.get('submission'))
         # super().solve(user, team, challenge, request)
 
         # KoHChallengeType.calculate_value(challenge)

@@ -15,26 +15,38 @@ CTFd._internal.challenge.postRender = function () { }
 
 CTFd._internal.challenge.submit = function (preview) {
     var challenge_id = parseInt(CTFd.lib.$('#challenge-id').val())
-    var submission = CTFd.lib.$('#challenge-input').val()
+    var submission_file = CTFd.lib.$('#challenge-input')[0].files[0]
 
-    var body = {
-        'challenge_id': challenge_id,
-        'submission': submission,
-    }
-    var params = {}
-    if (preview) {
-        params['preview'] = true
+    function file2base64(file) {
+        return new Promise(function (resolve, reject) {
+            let reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onload = function () {
+                resolve(this.result)
+            }
+        })
     }
 
-    return CTFd.api.post_challenge_attempt(params, body).then(function (response) {
-        if (response.status === 429) {
-            // User was ratelimited but process response
-            return response
+    return file2base64(submission_file).then(async function (submission) {
+        var body = {
+            'challenge_id': challenge_id,
+            'submission': submission,
         }
-        if (response.status === 403) {
-            // User is not logged in or CTF is paused.
-            return response
+        var params = {}
+        if (preview) {
+            params['preview'] = true
         }
-        return response
+
+        return await CTFd.api.post_challenge_attempt(params, body).then(function (response) {
+            if (response.status === 429) {
+                // User was ratelimited but process response
+                return response
+            }
+            if (response.status === 403) {
+                // User is not logged in or CTF is paused.
+                return response
+            }
+            return response
+        })
     })
 };

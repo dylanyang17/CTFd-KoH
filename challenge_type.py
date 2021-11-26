@@ -6,8 +6,9 @@ from flask import Blueprint
 from CTFd.models import Challenges, Solves, db
 from CTFd.plugins.challenges import CHALLENGE_CLASSES, BaseChallenge
 from CTFd.utils.modes import get_model
+from CTFd.utils.user import get_ip
 
-from .models import KoHChallengeModel
+from .models import KoHChallengeModel, KoHSolves
 
 
 class KoHChallengeType(BaseChallenge):
@@ -97,6 +98,7 @@ class KoHChallengeType(BaseChallenge):
         if fileExtension not in challenge.allowed_suffixes.split(','):
             return False, 'Disallowed file extension'
 
+
         return True, 'Running checker...'
 
     @classmethod
@@ -109,6 +111,16 @@ class KoHChallengeType(BaseChallenge):
             score = int(requests.post(challenge.checker_url, file, timeout=(5, 10)).text)
         except:
             score = 0
+
+        solve = KoHSolves(
+            user_id=user.id,
+            team_id=team.id if team else None,
+            challenge_id=challenge.id,
+            ip=get_ip(req=request),
+            score=score,
+        )
+        db.session.add(solve)
+        db.session.commit()
 
         print('Score:', score)
         

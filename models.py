@@ -8,7 +8,12 @@ class KoHChallengeModel(Challenges):
     )
     checker_url = db.Column(db.Text)
     allowed_suffixes = db.Column(db.Text)
+    filesize_limit = db.Column(db.Integer)
 
     def __init__(self, *args, **kwargs):
         super(KoHChallengeModel, self).__init__(**kwargs)
         # self.value = kwargs["initial"]
+
+
+class KoHSolves(Solves):
+    score = db.Column(db.Integer)

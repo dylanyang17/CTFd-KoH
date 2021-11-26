@@ -18,4 +18,13 @@
 	</label>
 	<input type="text" class="form-control" name="allowed_suffixes" placeholder="e.g. .jpg,.png" required>
 </div>
+
+<div class="form-group">
+	<label for="value">Filesize Limit<br>
+		<small class="form-text text-muted">
+			The limit of the filesize (MiB).
+		</small>
+	</label>
+	<input type="number" class="form-control" name="filesize_limit" required>
+</div>
 {% endblock %}

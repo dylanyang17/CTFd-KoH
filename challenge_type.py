@@ -34,39 +34,7 @@ class KoHChallengeType(BaseChallenge):
     challenge_model = KoHChallengeModel
 
     @classmethod
-    def calculate_value(cls, challenge):
-        Model = get_model()
-
-        solve_count = (
-            Solves.query.join(Model, Solves.account_id == Model.id)
-            .filter(
-                Solves.challenge_id == challenge.id,
-                Model.hidden == False,
-                Model.banned == False,
-            )
-            .count()
-        )
-
-        # If the solve count is 0 we shouldn't manipulate the solve count to
-        # let the math update back to normal
-        if solve_count != 0:
-            # We subtract -1 to allow the first solver to get max point value
-            solve_count -= 1
-
-        # It is important that this calculation takes into account floats.
-        # Hence this file uses from __future__ import division
-        value = (
-            ((challenge.minimum - challenge.initial) / (challenge.decay ** 2))
-            * (solve_count ** 2)
-        ) + challenge.initial
-
-        value = math.ceil(value)
-
-        if value < challenge.minimum:
-            value = challenge.minimum
-
-        challenge.value = value
-        db.session.commit()
+    def get_score_from_checker(cls, challenge, request):
         return challenge
 
     @classmethod
@@ -117,7 +85,12 @@ class KoHChallengeType(BaseChallenge):
         # return KoHChallengeType.calculate_value(challenge)
 
     @classmethod
+    def attempt(cls, challenge, request):
+        return True, 'Running checker...'
+
+    @classmethod
     def solve(cls, user, team, challenge, request):
-        super().solve(user, team, challenge, request)
+        pass
+        # super().solve(user, team, challenge, request)
 
         # KoHChallengeType.calculate_value(challenge)

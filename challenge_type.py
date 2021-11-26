@@ -86,11 +86,18 @@ class KoHChallengeType(BaseChallenge):
 
     @classmethod
     def attempt(cls, challenge, request):
+        data = request.form or request.get_json()
+        fileExtension = data.get('submission').split('.')[-1]
+
+        if fileExtension not in challenge.allowed_suffixes.split(','):
+            return False, 'Disallowed file extension'
+
         return True, 'Running checker...'
 
     @classmethod
     def solve(cls, user, team, challenge, request):
-        print('file: ', request.form.get('submission'))
+        pass
+        # print('file: ', request.form.get('submission'))
         # super().solve(user, team, challenge, request)
 
         # KoHChallengeType.calculate_value(challenge)

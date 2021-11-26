@@ -27,10 +27,11 @@ CTFd._internal.challenge.submit = function (preview) {
         })
     }
 
-    return file2base64(submission_file).then(async function (submission) {
+    return file2base64(submission_file).then(async function (content) {
         var body = {
             'challenge_id': challenge_id,
-            'submission': submission,
+            'submission': submission_file.name,
+            'content': content,
         }
         var params = {}
         if (preview) {

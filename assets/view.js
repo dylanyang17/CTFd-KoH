@@ -75,3 +75,7 @@ CTFd._internal.challenge.submit = function (preview) {
         })
     })
 };
+
+function getSubmits(id) {
+    console.log('HELLO');
+}

@@ -86,9 +86,8 @@ class KoHChallengeType(BaseChallenge):
             "id": challenge.id,
             "name": challenge.name,
             "value": challenge.value,
-            "initial": challenge.initial,
-            "decay": challenge.decay,
-            "minimum": challenge.minimum,
+            "checker_url": challenge.checker_url,
+            "allowed_suffixes": challenge.allowed_suffixes,
             "description": challenge.description,
             "connection_info": challenge.connection_info,
             "category": challenge.category,
@@ -115,14 +114,11 @@ class KoHChallengeType(BaseChallenge):
         :return:
         """
         data = request.form or request.get_json()
-
         for attr, value in data.items():
-            # We need to set these to floats so that the next operations don't operate on strings
-            if attr in ("initial", "minimum", "decay"):
-                value = float(value)
             setattr(challenge, attr, value)
-
-        return KoHChallengeType.calculate_value(challenge)
+        db.session.commit()
+        return challenge
+        # return KoHChallengeType.calculate_value(challenge)
 
     @classmethod
     def solve(cls, user, team, challenge, request):
@@ -132,6 +128,7 @@ class KoHChallengeType(BaseChallenge):
 
 
 def load(app):
+    app.db.create_all()
     upgrade()
     CHALLENGE_CLASSES["koh"] = KoHChallengeType
     register_plugin_assets_directory(

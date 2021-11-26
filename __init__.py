@@ -4,7 +4,7 @@ from CTFd.plugins import register_plugin_assets_directory
 from CTFd.plugins.challenges import CHALLENGE_CLASSES
 from CTFd.plugins.migrations import upgrade
 
-from .challenge_type import KoHChallengeTypes
+from .challenge_type import KoHChallengeType
 
 
 def load(app):

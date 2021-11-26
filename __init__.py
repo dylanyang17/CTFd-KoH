@@ -2,7 +2,7 @@ from __future__ import division  # Use floating point for math calculations
 
 from flask import render_template, Blueprint
 
-from CTFd.plugins import register_plugin_assets_directory
+from CTFd.plugins import register_plugin_assets_directory, register_user_page_menu_bar
 from CTFd.plugins.challenges import CHALLENGE_CLASSES
 from CTFd.plugins.migrations import upgrade
 from CTFd.utils.logging import log
@@ -30,3 +30,4 @@ def load(app):
         return render_template('koh-scoreboard.html')
 
     app.register_blueprint(koh_blueprint)
+    register_user_page_menu_bar('KoH', '/koh-scoreboard')

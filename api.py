@@ -12,6 +12,7 @@ from CTFd.utils.decorators.visibility import (
     check_score_visibility,
 )
 from CTFd.utils.modes import TEAMS_MODE, generate_account_url, get_mode_as_word
+from CTFd.utils.user import get_current_user
 
 from .standings import get_koh_standings, get_koh_user_standings
 from .models import KoHSolves
@@ -140,7 +141,35 @@ class KoHScoreboardDetailAccount(Resource):
     @check_score_visibility
     @cache.cached(timeout=60)
     def get(self, challenge_id, account_id):
-        koh_solves = KoHSolves.query.filter(KoHSolves.account_id == account_id and KoHSolves.challenge_id == challenge_id)
+        print(challenge_id, account_id)
+        koh_solves = KoHSolves.query.filter(KoHSolves.account_id == account_id, KoHSolves.challenge_id == challenge_id)
+        freeze = get_config("freeze")
+        if freeze:
+            koh_solves = koh_solves.filter(KoHSolves.date < unix_time_to_utc(freeze))
+        koh_solves = koh_solves.all()
+        response = {'solves': []}
+        for solve in koh_solves:
+            response['solves'].append(
+                {
+                    "challenge_id": solve.challenge_id,
+                    "account_id": solve.account_id,
+                    "team_id": solve.team_id,
+                    "user_id": solve.user_id,
+                    "value": solve.score,
+                    "date": isoformat(solve.date),
+                }
+            )
+        return {"success": True, "data": response}
+
+
+@koh_scoreboard_namespace.route("/<challenge_id>/mine")
+@koh_scoreboard_namespace.param("challenge_id", "The KoH challenge's id")
+class KoHScoreboardDetailCurrentAccount(Resource):
+    @check_account_visibility
+    @check_score_visibility
+    def get(self, challenge_id):
+        user = get_current_user()
+        koh_solves = KoHSolves.query.filter(KoHSolves.account_id == user.account_id, KoHSolves.challenge_id == challenge_id)
         freeze = get_config("freeze")
         if freeze:
             koh_solves = koh_solves.filter(KoHSolves.date < unix_time_to_utc(freeze))

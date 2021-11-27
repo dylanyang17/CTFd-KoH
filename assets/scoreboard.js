@@ -1,15 +1,86 @@
-import "./main";
-import $ from "jquery";
-import CTFd from "../CTFd";
-import echarts from "echarts/dist/echarts-en.common";
-import dayjs from "dayjs";
-import { htmlEntities, cumulativeSum, colorHash } from "../utils";
+//import "./main";
+//import $ from "jquery";
+//import CTFd from "../CTFd";
+//import echarts from "echarts/dist/echarts-en.common";
+//import dayjs from "dayjs";
+//import { htmlEntities, cumulativeSum, colorHash } from "../utils";
+
+const $ = CTFd.lib.$;
 
 const graph = $("#score-graph");
 const table = $("#scoreboard tbody");
 
+get_koh_scoreboard_list = function(parameters) {
+    if (parameters === undefined) {
+      parameters = {};
+    }
+    let deferred = Q.defer();
+    let domain = this.domain,
+      path = "/scoreboard";
+    let body = {},
+      queryParameters = {},
+      headers = {},
+      form = {};
+
+    headers["Accept"] = ["application/json"];
+    headers["Content-Type"] = ["application/json"];
+
+    queryParameters = mergeQueryParams(parameters, queryParameters);
+
+    this.request(
+      "GET",
+      domain + path,
+      parameters,
+      body,
+      headers,
+      queryParameters,
+      form,
+      deferred
+    );
+
+    return deferred.promise;
+};
+
+API.prototype.get_scoreboard_detail = function(parameters) {
+    if (parameters === undefined) {
+      parameters = {};
+    }
+    let deferred = Q.defer();
+    let domain = this.domain,
+      path = "/scoreboard/top/{count}";
+    let body = {},
+      queryParameters = {},
+      headers = {},
+      form = {};
+
+    headers["Accept"] = ["application/json"];
+    headers["Content-Type"] = ["application/json"];
+
+    path = path.replace("{count}", parameters["count"]);
+
+    if (parameters["count"] === undefined) {
+      deferred.reject(new Error("Missing required  parameter: count"));
+      return deferred.promise;
+    }
+
+    queryParameters = mergeQueryParams(parameters, queryParameters);
+
+    this.request(
+      "GET",
+      domain + path,
+      parameters,
+      body,
+      headers,
+      queryParameters,
+      form,
+      deferred
+    );
+
+    return deferred.promise;
+};
+
 const updateScores = () => {
-  CTFd.api.get_scoreboard_list().then(response => {
+  get_scoreboard_list().then(response => {
     const teams = response.data;
     table.empty();
 

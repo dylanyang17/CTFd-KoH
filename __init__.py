@@ -27,6 +27,7 @@ from CTFd.utils.user import authed, get_current_team, is_admin
 from .challenge_type import KoHChallengeType
 from .standings import get_koh_standings
 from .api import koh_scoreboard_namespace
+from .util import get_koh_challenges_attrs
 
 
 def load(app):
@@ -96,7 +97,8 @@ def load(app):
     @admins_only
     def admin_koh_scoreboard_index():
         db.session.query()
-        return render_template('admin/koh-scoreboard-index.html', infos=get_infos(), errors=get_errors())
+        koh_challenge_attrs = get_koh_challenges_attrs()
+        return render_template('admin/koh-scoreboard-index.html', koh_challenge_attrs=koh_challenge_attrs, infos=get_infos(), errors=get_errors())
 
     app.register_blueprint(koh_blueprint)
     register_user_page_menu_bar('KoH', '/koh-scoreboard')

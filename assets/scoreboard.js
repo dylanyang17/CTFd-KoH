@@ -65,8 +65,7 @@ const buildGraphData = () => {
     const option = {
       title: {
         left: "center",
-        // text: "Top 10 " + (CTFd.config.userMode === "teams" ? "Teams" : "Users")  // TODO
-        text: "Top 10 Users"
+        text: "Top 10"
       },
       tooltip: {
         trigger: "axis",
@@ -123,7 +122,7 @@ const buildGraphData = () => {
       const times = [];
       let max_score = 0;
       for (let j = 0; j < places[teams[i]]["solves"].length; j++) {
-        if (max_score < places[teams[i]]["solves"][j].value) {
+        if (id == places[teams[i]]["solves"][j].challenge_id && max_score < places[teams[i]]["solves"][j].value) {
           team_score.push(places[teams[i]]["solves"][j].value);
           const date = dayjs(places[teams[i]]["solves"][j].date);
           times.push(date.toDate());

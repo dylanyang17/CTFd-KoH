@@ -44,6 +44,7 @@ def load(app):
     )
 
     @koh_blueprint.route("/koh-scoreboard/<int:challenge_id>", methods=["GET"])
+    @during_ctf_time_only
     @check_score_visibility
     def koh_scoreboard(challenge_id):
         infos = get_infos()
@@ -58,9 +59,7 @@ def load(app):
         return render_template('koh-scoreboard.html', standings=standings, infos=infos)
 
     @koh_blueprint.route("/koh-scoreboard", methods=["GET"])
-    @require_complete_profile
     @during_ctf_time_only
-    @require_verified_emails
     @check_challenge_visibility
     def koh_scoreboard_index():
         if (

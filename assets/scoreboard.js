@@ -1,84 +1,36 @@
-//import "./main";
-//import $ from "jquery";
-//import CTFd from "../CTFd";
-//import echarts from "echarts/dist/echarts-en.common";
-//import dayjs from "dayjs";
-//import { htmlEntities, cumulativeSum, colorHash } from "../utils";
+function htmlEntities(string) {
+  return $("<div/>")
+    .text(string)
+    .html();
+}
+
+// https://gist.github.com/0x263b/2bdd90886c2036a1ad5bcf06d6e6fb37
+function colorHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    hash = hash & hash;
+  }
+  // Range calculation
+  // diff = max - min;
+  // x = ((hash % diff) + diff) % diff;
+  // return x + min;
+  // Calculate HSL values
+  // Range from 0 to 360
+  let h = ((hash % 360) + 360) % 360;
+  // Range from 75 to 100
+  let s = (((hash % 25) + 25) % 25) + 75;
+  // Range from 40 to 60
+  let l = (((hash % 20) + 20) % 20) + 40;
+  return `hsl(${h}, ${s}%, ${l}%)`;
+}
 
 const graph = $("#score-graph");
 const table = $("#scoreboard tbody");
-
-get_koh_scoreboard_list = function(parameters) {
-    if (parameters === undefined) {
-      parameters = {};
-    }
-    let deferred = Q.defer();
-    let domain = this.domain,
-      path = "/scoreboard";
-    let body = {},
-      queryParameters = {},
-      headers = {},
-      form = {};
-
-    headers["Accept"] = ["application/json"];
-    headers["Content-Type"] = ["application/json"];
-
-    queryParameters = mergeQueryParams(parameters, queryParameters);
-
-    this.request(
-      "GET",
-      domain + path,
-      parameters,
-      body,
-      headers,
-      queryParameters,
-      form,
-      deferred
-    );
-
-    return deferred.promise;
-};
-
-API.prototype.get_scoreboard_detail = function(parameters) {
-    if (parameters === undefined) {
-      parameters = {};
-    }
-    let deferred = Q.defer();
-    let domain = this.domain,
-      path = "/scoreboard/top/{count}";
-    let body = {},
-      queryParameters = {},
-      headers = {},
-      form = {};
-
-    headers["Accept"] = ["application/json"];
-    headers["Content-Type"] = ["application/json"];
-
-    path = path.replace("{count}", parameters["count"]);
-
-    if (parameters["count"] === undefined) {
-      deferred.reject(new Error("Missing required  parameter: count"));
-      return deferred.promise;
-    }
-
-    queryParameters = mergeQueryParams(parameters, queryParameters);
-
-    this.request(
-      "GET",
-      domain + path,
-      parameters,
-      body,
-      headers,
-      queryParameters,
-      form,
-      deferred
-    );
-
-    return deferred.promise;
-};
+const id = parseInt(window.location.href.split('/').slice(-1));
 
 const updateScores = () => {
-  get_scoreboard_list().then(response => {
+  new KoH_API().get_scoreboard_list({ challengeId: id }).then(response => {
     const teams = response.data;
     table.empty();
 
@@ -88,10 +40,7 @@ const updateScores = () => {
         '<th scope="row" class="text-center">',
         i + 1,
         "</th>",
-        '<td><a href="{0}/teams/{1}">'.format(
-          CTFd.config.urlRoot,
-          teams[i].account_id
-        ),
+        '<td><a href="' + teams[i].account_url + '">',
         htmlEntities(teams[i].name),
         "</a></td>",
         "<td>",
@@ -105,7 +54,7 @@ const updateScores = () => {
 };
 
 const buildGraphData = () => {
-  return CTFd.api.get_scoreboard_detail({ count: 10 }).then(response => {
+  return new KoH_API().get_scoreboard_detail({ challengeId: id, count: 10 }).then(response => {
     const places = response.data;
 
     const teams = Object.keys(places);
@@ -116,7 +65,8 @@ const buildGraphData = () => {
     const option = {
       title: {
         left: "center",
-        text: "Top 10 " + (CTFd.config.userMode === "teams" ? "Teams" : "Users")
+        // text: "Top 10 " + (CTFd.config.userMode === "teams" ? "Teams" : "Users")  // TODO
+        text: "Top 10 Users"
       },
       tooltip: {
         trigger: "axis",
@@ -171,15 +121,18 @@ const buildGraphData = () => {
     for (let i = 0; i < teams.length; i++) {
       const team_score = [];
       const times = [];
+      let max_score = 0;
       for (let j = 0; j < places[teams[i]]["solves"].length; j++) {
-        team_score.push(places[teams[i]]["solves"][j].value);
-        const date = dayjs(places[teams[i]]["solves"][j].date);
-        times.push(date.toDate());
+        if (max_score < places[teams[i]]["solves"][j].value) {
+          team_score.push(places[teams[i]]["solves"][j].value);
+          const date = dayjs(places[teams[i]]["solves"][j].date);
+          times.push(date.toDate());
+          max_score = places[teams[i]]["solves"][j].value;
+        }
       }
 
-      const total_scores = cumulativeSum(team_score);
       var scores = times.map(function(e, i) {
-        return [e, total_scores[i]];
+        return [e, team_score[i]];
       });
 
       option.legend.data.push(places[teams[i]]["name"]);

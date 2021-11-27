@@ -59,8 +59,11 @@
 {% endblock %}
 
 {% block scripts %}
-	<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-	<script src="{{ url_for('plugins.koh.assets', path='echarts.bundle.min.js') }}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/q@1.5.1/q.min.js"></script>
+	<script src="{{ url_for('plugins.koh.assets', path='api.js') }}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/echarts@5.2.2/dist/echarts.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/dayjs.min.js"></script>
 {% endblock %}
 
 {% block entrypoint %}

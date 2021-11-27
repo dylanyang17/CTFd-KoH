@@ -24,66 +24,8 @@ String.prototype.hashCode = function () {
     return hash;
 };
 
-function mergeQueryParams(parameters, queryParameters) {
-    if (parameters.$queryParameters) {
-        Object.keys(parameters.$queryParameters).forEach(function (parameterName) {
-            let parameter = parameters.$queryParameters[parameterName];
-            queryParameters[parameterName] = parameter;
-        });
-    }
-    return queryParameters;
-}
-
 function loadChals() {
-    return new Promise(function (resolve, reject) {
-        let parameters = {};
-        let domain = "api/v1",
-            path = "/challenges";
-        let body = {},
-            queryParameters = {},
-            headers = {},
-            form = {};
-
-        headers["Accept"] = ["application/json"];
-        headers["Content-Type"] = ["application/json"];
-
-        if (parameters["id"] !== undefined) {
-            queryParameters["id"] = parameters["id"];
-        }
-
-        path = path.replace("{challenge_id}", parameters["challengeId"]);
-
-        queryParameters = mergeQueryParams(parameters, queryParameters);
-
-        let method = "GET",
-            url = domain + path;
-
-        let queryParams =
-            queryParameters && Object.keys(queryParameters).length
-                ? serializeQueryParams(queryParameters)
-                : null;
-        let urlWithParams = url + (queryParams ? "?" + queryParams : "");
-
-        if (body && !Object.keys(body).length) {
-            body = undefined;
-        }
-
-        fetch(urlWithParams, {
-            method,
-            headers,
-            body: JSON.stringify(body)
-        })
-            .then(response => {
-                return response.json();
-            })
-            .then(body => {
-                resolve(body);
-            })
-            .catch(error => {
-                reject(error);
-            });
-
-    }).then(response => {
+    return new KoH_API().get_challenge_list().then(function(response) {
         let challenges = response.data.filter(x => x.type == 'koh');
 
         const $challenges_board = $("#challenges-board");

@@ -24,7 +24,9 @@
 {% endblock %}
 
 {% block scripts %}
-	<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/q@1.5.1/q.min.js"></script>
+	<script src="{{ url_for('plugins.koh.assets', path='api.js') }}"></script>
 {% endblock %}
 
 {% block entrypoint %}

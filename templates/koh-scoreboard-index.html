@@ -11,6 +11,8 @@
 </div>
 
 <div class="container">
+	{% include "components/errors.html" %}
+
 	<div id='challenges-board'>
 		<div class="min-vh-50 d-flex align-items-center">
 			<div class="text-center w-100">
@@ -22,9 +24,9 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+	<script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
 {% endblock %}
 
 {% block entrypoint %}
-<script defer src="/plugins/CTFd-KoH/assets/scoreboard-index.js"></script>
+	<script defer src="/plugins/CTFd-KoH/assets/scoreboard-index.js"></script>
 {% endblock %}

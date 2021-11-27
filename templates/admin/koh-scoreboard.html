@@ -9,12 +9,6 @@
 <div class="container">
 	{% include "components/errors.html" %}
 
-	<div id="score-graph" class="row d-flex align-items-center">
-		<div class="col-md-12 text-center">
-			<i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner"></i>
-		</div>
-	</div>
-
 	{% if standings %}
 	<div id="scoreboard" class="row">
 		<div class="col-md-12">
@@ -56,16 +50,4 @@
 	</div>
 	{% endif %}
 </div>
-{% endblock %}
-
-{% block scripts %}
-	<script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/q@1.5.1/q.min.js"></script>
-	<script src="{{ url_for('plugins.koh.assets', path='api.js') }}"></script>
-	<script src="https://cdn.jsdelivr.net/npm/echarts@5.2.2/dist/echarts.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/dayjs.min.js"></script>
-{% endblock %}
-
-{% block entrypoint %}
-	<script defer src="{{ url_for('plugins.koh.assets', path='scoreboard.js') }}"></script>
 {% endblock %}

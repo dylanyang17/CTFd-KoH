@@ -95,7 +95,7 @@ class KoHScoreboardDetailTop(Resource):
 
         team_ids = [team.account_id for team in standings]
 
-        koh_solves = KoHSolves.query.filter(KoHSolves.account_id.in_(team_ids))
+        koh_solves = KoHSolves.query.filter(KoHSolves.account_id.in_(team_ids), KoHSolves.challenge_id == challenge_id)
 
         freeze = get_config("freeze")
 

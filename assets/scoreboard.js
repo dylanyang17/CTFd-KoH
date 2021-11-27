@@ -5,8 +5,6 @@
 //import dayjs from "dayjs";
 //import { htmlEntities, cumulativeSum, colorHash } from "../utils";
 
-const $ = CTFd.lib.$;
-
 const graph = $("#score-graph");
 const table = $("#scoreboard tbody");
 

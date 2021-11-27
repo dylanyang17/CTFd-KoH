@@ -22,7 +22,7 @@ def load(app):
     upgrade()
     CHALLENGE_CLASSES["koh"] = KoHChallengeType
     register_plugin_assets_directory(
-        app, base_path="/plugins/CTFd-KoH/assets/"
+        app, base_path="/plugins/CTFd-KoH/assets/", endpoint='plugins.koh.assets'
     )
 
     koh_blueprint = Blueprint(
@@ -54,4 +54,4 @@ def load(app):
 
     app.register_blueprint(koh_blueprint)
     register_user_page_menu_bar('KoH', '/koh-scoreboard')
-    CTFd_API_v1.add_namespace(koh_scoreboard_namespace, path="/plugins/koh/scoreboard")
+    CTFd_API_v1.add_namespace(koh_scoreboard_namespace, path="/plugins/CTFd-KoH/scoreboard")

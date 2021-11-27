@@ -148,8 +148,8 @@ function getSubmits(id) {
             const date = dayjs(data[i].date).fromNow();
             box.append(
                 '<tr><td>{0}</td><td>{1}</td></tr>'.format(
-                    date,
-                    value
+                    value,
+                    date
                 )
             );
         }

@@ -207,3 +207,10 @@ def get_koh_user_standings(challenge_id, count=None, admin=False, fields=None):
         standings = standings_query.limit(count).all()
 
     return standings
+
+
+def clear_koh_standings():
+    # Clear out the bulk standings functions
+    cache.delete_memoized(get_koh_standings)
+    cache.delete_memoized(get_koh_team_standings)
+    cache.delete_memoized(get_koh_user_standings)

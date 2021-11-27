@@ -3,6 +3,7 @@ import requests
 
 from flask import Blueprint
 
+from .standings import clear_koh_standings
 from CTFd.models import Challenges, Solves, db
 from CTFd.plugins.challenges import CHALLENGE_CLASSES, BaseChallenge
 from CTFd.utils.modes import get_model
@@ -91,6 +92,8 @@ class KoHChallengeType(BaseChallenge):
         data = request.form or request.get_json()
 
         fileName = data.get('submission')
+        print('test:', fileName)
+
         if len(fileName) == 0:
             return False, 'No file'
 
@@ -120,6 +123,8 @@ class KoHChallengeType(BaseChallenge):
         )
         db.session.add(solve)
         db.session.commit()
+
+        clear_koh_standings()
 
         print('Score:', score)
         

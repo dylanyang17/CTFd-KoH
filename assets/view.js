@@ -76,6 +76,82 @@ CTFd._internal.challenge.submit = function (preview) {
     })
 };
 
+function mergeQueryParams(parameters, queryParameters) {
+    if (parameters.$queryParameters) {
+        Object.keys(parameters.$queryParameters).forEach(function (parameterName) {
+            let parameter = parameters.$queryParameters[parameterName];
+            queryParameters[parameterName] = parameter;
+        });
+    }
+    return queryParameters;
+}
+
 function getSubmits(id) {
-    console.log('HELLO');
+    return new Promise(function (resolve, reject) {
+        let parameters = { challengeId: id };
+        let domain = CTFd.api.domain,
+            path = "/plugins/koh/scoreboard/{challenge_id}/mine";
+        let body = {},
+            queryParameters = {},
+            headers = {},
+            form = {};
+
+        headers["Accept"] = ["application/json"];
+        headers["Content-Type"] = ["application/json"];
+
+        if (parameters["id"] !== undefined) {
+            queryParameters["id"] = parameters["id"];
+        }
+
+        path = path.replace("{challenge_id}", parameters["challengeId"]);
+
+        if (parameters["challengeId"] === undefined) {
+            reject(new Error("Missing required  parameter: challengeId"));
+        }
+
+        queryParameters = mergeQueryParams(parameters, queryParameters);
+
+        let method = "GET",
+            url = domain + path;
+
+        let queryParams =
+            queryParameters && Object.keys(queryParameters).length
+                ? serializeQueryParams(queryParameters)
+                : null;
+        let urlWithParams = url + (queryParams ? "?" + queryParams : "");
+
+        if (body && !Object.keys(body).length) {
+            body = undefined;
+        }
+
+        fetch(urlWithParams, {
+            method,
+            headers,
+            body: JSON.stringify(body)
+        })
+            .then(response => {
+                return response.json();
+            })
+            .then(body => {
+                resolve(body);
+            })
+            .catch(error => {
+                reject(error);
+            });
+
+    }).then(response => {
+        const data = response.data.solves;
+        const box = $("#challenge-submits-details");
+        box.empty();
+        for (let i = 0; i < data.length; i++) {
+            const value = data[i].value;
+            const date = dayjs(data[i].date).fromNow();
+            box.append(
+                '<tr><td>{0}</td><td>{1}</td></tr>'.format(
+                    date,
+                    value
+                )
+            );
+        }
+    });
 }

@@ -92,7 +92,6 @@ class KoHChallengeType(BaseChallenge):
         data = request.form or request.get_json()
 
         fileName = data.get('submission')
-        print('test:', fileName)
 
         if len(fileName) == 0:
             return False, 'No file'
@@ -100,6 +99,15 @@ class KoHChallengeType(BaseChallenge):
         fileExtension = fileName.split('.')[-1]
         if fileExtension not in challenge.allowed_suffixes.split(','):
             return False, 'Disallowed file extension'
+
+        try:
+            file_encode = data.get('content')
+            file_encode = file_encode.split(';base64,')[-1]
+            file = base64.b64decode(file_encode)
+            if challenge.filesize_limit != 0 and len(file) > challenge.filesize_limit * 2**20:
+                return False, 'Size limit exceeded'
+        except:
+            return False, 'Internal Error'
 
         return True, 'Running checker...'
 

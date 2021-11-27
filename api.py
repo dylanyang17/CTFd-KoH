@@ -4,7 +4,7 @@ from flask_restx import Namespace, Resource
 from sqlalchemy import select
 
 from CTFd.cache import cache, make_cache_key
-from CTFd.models import Awards, Solves, Users, db
+from CTFd.models import Users, db
 from CTFd.utils import get_config
 from CTFd.utils.dates import isoformat, unix_time_to_utc
 from CTFd.utils.decorators.visibility import (
@@ -13,20 +13,22 @@ from CTFd.utils.decorators.visibility import (
 )
 from CTFd.utils.modes import TEAMS_MODE, generate_account_url, get_mode_as_word
 
-from .standings import get_standings, get_user_standings
+from .standings import get_koh_standings, get_koh_user_standings
+from .models import KoHSolves
 
 koh_scoreboard_namespace = Namespace(
     "koh_scoreboard", description="Endpoint to retrieve scores"
 )
 
 
-@koh_scoreboard_namespace.route("")
-class ScoreboardList(Resource):
+@koh_scoreboard_namespace.route("/<challenge_id>/standings")
+@koh_scoreboard_namespace.param("challenge_id", "The KoH challenge's id")
+class KoHScoreboardList(Resource):
     @check_account_visibility
     @check_score_visibility
-    @cache.cached(timeout=60, key_prefix=make_cache_key)
-    def get(self):
-        standings = get_standings()
+    @cache.cached(timeout=60)
+    def get(self, challenge_id):
+        standings = get_koh_standings(challenge_id=challenge_id)
         response = []
         mode = get_config("user_mode")
         account_type = get_mode_as_word()
@@ -56,7 +58,7 @@ class ScoreboardList(Resource):
                     }
 
             # Get user_standings as a dict so that we can more quickly get member scores
-            user_standings = get_user_standings()
+            user_standings = get_koh_user_standings(challenge_id)
             for u in user_standings:
                 membership[u.team_id][u.user_id]["score"] = int(u.score)
 
@@ -78,54 +80,40 @@ class ScoreboardList(Resource):
         return {"success": True, "data": response}
 
 
-@koh_scoreboard_namespace.route("/top/<count>")
+@koh_scoreboard_namespace.route("/<challenge_id>/top/<count>")
+@koh_scoreboard_namespace.param("challenge_id", "The KoH challenge's id")
 @koh_scoreboard_namespace.param("count", "How many top teams to return")
-class ScoreboardDetail(Resource):
+class KoHScoreboardDetailTop(Resource):
     @check_account_visibility
     @check_score_visibility
-    @cache.cached(timeout=60, key_prefix=make_cache_key)
-    def get(self, count):
+    @cache.cached(timeout=60)
+    def get(self, challenge_id, count):
         response = {}
 
-        standings = get_standings(count=count)
+        standings = get_koh_standings(challenge_id=challenge_id, count=count)
 
         team_ids = [team.account_id for team in standings]
 
-        solves = Solves.query.filter(Solves.account_id.in_(team_ids))
-        awards = Awards.query.filter(Awards.account_id.in_(team_ids))
+        koh_solves = KoHSolves.query.filter(KoHSolves.account_id.in_(team_ids))
 
         freeze = get_config("freeze")
 
         if freeze:
-            solves = solves.filter(Solves.date < unix_time_to_utc(freeze))
-            awards = awards.filter(Awards.date < unix_time_to_utc(freeze))
+            koh_solves = koh_solves.filter(KoHSolves.date < unix_time_to_utc(freeze))
 
-        solves = solves.all()
-        awards = awards.all()
+        koh_solves = koh_solves.all()
 
         # Build a mapping of accounts to their solves and awards
         solves_mapper = defaultdict(list)
-        for solve in solves:
+        for solve in koh_solves:
             solves_mapper[solve.account_id].append(
                 {
                     "challenge_id": solve.challenge_id,
                     "account_id": solve.account_id,
                     "team_id": solve.team_id,
                     "user_id": solve.user_id,
-                    "value": solve.challenge.value,
+                    "value": solve.score,
                     "date": isoformat(solve.date),
-                }
-            )
-
-        for award in awards:
-            solves_mapper[award.account_id].append(
-                {
-                    "challenge_id": None,
-                    "account_id": award.account_id,
-                    "team_id": award.team_id,
-                    "user_id": award.user_id,
-                    "value": award.value,
-                    "date": isoformat(award.date),
                 }
             )
 
@@ -141,4 +129,32 @@ class ScoreboardDetail(Resource):
                 "name": standings[i].name,
                 "solves": solves_mapper.get(standings[i].account_id, []),
             }
+        return {"success": True, "data": response}
+
+
+@koh_scoreboard_namespace.route("/<challenge_id>/account/<account_id>")
+@koh_scoreboard_namespace.param("challenge_id", "The KoH challenge's id")
+@koh_scoreboard_namespace.param("account_id", "The target account's id")
+class KoHScoreboardDetailAccount(Resource):
+    @check_account_visibility
+    @check_score_visibility
+    @cache.cached(timeout=60)
+    def get(self, challenge_id, account_id):
+        koh_solves = KoHSolves.query.filter(KoHSolves.account_id == account_id and KoHSolves.challenge_id == challenge_id)
+        freeze = get_config("freeze")
+        if freeze:
+            koh_solves = koh_solves.filter(KoHSolves.date < unix_time_to_utc(freeze))
+        koh_solves = koh_solves.all()
+        response = {'solves': []}
+        for solve in koh_solves:
+            response['solves'].append(
+                {
+                    "challenge_id": solve.challenge_id,
+                    "account_id": solve.account_id,
+                    "team_id": solve.team_id,
+                    "user_id": solve.user_id,
+                    "value": solve.score,
+                    "date": isoformat(solve.date),
+                }
+            )
         return {"success": True, "data": response}

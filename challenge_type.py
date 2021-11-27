@@ -98,7 +98,6 @@ class KoHChallengeType(BaseChallenge):
         if fileExtension not in challenge.allowed_suffixes.split(','):
             return False, 'Disallowed file extension'
 
-
         return True, 'Running checker...'
 
     @classmethod

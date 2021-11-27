@@ -1,5 +1,7 @@
 import datetime
 
+from sqlalchemy.ext.hybrid import hybrid_property
+
 from CTFd.models import Challenges, Solves, db, Submissions
 
 
@@ -32,3 +34,24 @@ class KoHSolves(db.Model):
 
     def __init__(self, *args, **kwargs):
         super(KoHSolves, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return f"<Submission id={self.id}, challenge_id={self.challenge_id}, ip={self.ip}, provided={self.provided}>"
+
+    @hybrid_property
+    def account_id(self):
+        from CTFd.utils import get_config
+
+        user_mode = get_config("user_mode")
+        if user_mode == "teams":
+            return self.team_id
+        elif user_mode == "users":
+            return self.user_id
+
+    @staticmethod
+    def get_child(type):
+        child_classes = {
+            x.polymorphic_identity: x.class_
+            for x in Submissions.__mapper__.self_and_descendants
+        }
+        return child_classes[type]

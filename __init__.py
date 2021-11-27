@@ -33,4 +33,4 @@ def load(app):
 
     app.register_blueprint(koh_blueprint)
     register_user_page_menu_bar('KoH', '/koh-scoreboard')
-    CTFd_API_v1.add_namespace(koh_scoreboard_namespace, path="plugins/koh/scoreboard")
+    CTFd_API_v1.add_namespace(koh_scoreboard_namespace, path="/plugins/koh/scoreboard")

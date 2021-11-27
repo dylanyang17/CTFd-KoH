@@ -9,6 +9,7 @@ from CTFd.api import CTFd_API_v1
 from CTFd.utils.logging import log
 
 from .challenge_type import KoHChallengeType
+from .standings import get_koh_standings
 from .api import koh_scoreboard_namespace
 
 
@@ -27,9 +28,10 @@ def load(app):
         static_folder="assets",
     )
 
-    @koh_blueprint.route("/koh-scoreboard")
-    def koh_scoreboard():
-        return render_template('koh-scoreboard.html')
+    @koh_blueprint.route("/koh-scoreboard/<int:challenge_id>")
+    def koh_scoreboard(challenge_id):
+        standings = get_koh_standings(challenge_id)
+        return render_template('koh-scoreboard.html', standings=standings)
 
     app.register_blueprint(koh_blueprint)
     register_user_page_menu_bar('KoH', '/koh-scoreboard')

@@ -135,9 +135,9 @@
 								<table class="table table-striped text-center">
 									<thead>
 									<tr>
-										<td><b>Date</b>
-										</td>
 										<td><b>Score</b>
+										</td>
+										<td><b>Date</b>
 										</td>
 									</tr>
 									</thead>
@@ -152,10 +152,11 @@
 		</div>
 	</div>
 </div>
+
+{% block entrypoint %}
 <script>
-$(() => {
-    $(".challenge-submits").click(function (_event) {
-        getSubmits($("#challenge-id").val());
-    });
+$(".challenge-submits").click(function (_event) {
+	getSubmits($("#challenge-id").val());
 });
 </script>
+{% endblock %}

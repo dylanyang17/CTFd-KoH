@@ -91,31 +91,34 @@ def load(app):
     @admins_only
     def admin_koh_scoreboard():
         db.session.query()
-        attrs = get_koh_challenges_attrs()
-        standings_dict = {}
-        for attr in attrs:
+        challenge_attrs = get_koh_challenges_attrs(admin=True)
+        challenge_ids = []
+        rows_dict = {}
+        for attr in challenge_attrs:
             challenge_id = attr['challenge_id']
-            challenge_name = attr['challenge_name']
+            challenge_ids.append(challenge_id)
             standings = get_koh_standings(challenge_id, admin=True)
-            # for i, x in enumerate(standings):
-            #     account_id = x.account_id
-            #     name = x.name
-            #     score = x.score
-            #     oauth_id = x.oauth_id
-            #     entry = {
-            #         "pos": i + 1,
-            #         "account_id": x.account_id,
-            #         "account_url": generate_account_url(account_id=x.account_id),
-            #         "account_type": account_type,
-            #         "oauth_id": x.oauth_id,
-            #         "name": x.name,
-            #         "score": int(x.score),
-            #     }
-
-            standings_dict[challenge_name] = standings
-        return render_template('admin/koh-scoreboard.html', standings=standings_dict, infos=get_infos(), errors=get_errors())
+            for s in standings:
+                if rows_dict.get(s.account_id) is None:
+                    rows_dict[s.account_id] = {
+                        "account_id": s.account_id,
+                        "name": s.name,
+                        "scores": {},
+                        "oauth_id": s.oauth_id,
+                        "total": 0
+                    }
+                rows_dict[s.account_id]["scores"][challenge_id] = s.score
+                rows_dict[s.account_id]["total"] += s.score
+        rows = sorted(list(rows_dict.values()), key=lambda x: x["total"], reverse=True)
+        for i in range(len(rows)):
+            new_scores = []
+            for challenge_id in challenge_ids:
+                score = rows[i]['scores'].get(challenge_id)
+                new_scores.append('-' if score is None else score)
+            rows[i]['scores'] = new_scores
+        return render_template('admin/koh-scoreboard.html', rows=rows, challenge_attrs=challenge_attrs, infos=get_infos(), errors=get_errors())
 
     app.register_blueprint(koh_blueprint)
     register_user_page_menu_bar('KoH', '/koh-scoreboard')
-    # register_admin_plugin_menu_bar('KoH', '/admin/koh-scoreboard')
+    register_admin_plugin_menu_bar('KoH', '/admin/koh-scoreboard')
     CTFd_API_v1.add_namespace(koh_scoreboard_namespace, path="/plugins/CTFd-KoH/scoreboard")

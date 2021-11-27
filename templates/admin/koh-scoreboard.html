@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
 {% block content %}
 <div class="jumbotron">
@@ -9,7 +9,7 @@
 <div class="container">
 	{% include "components/errors.html" %}
 
-	{% if standings %}
+	{% if rows %}
 	<div id="scoreboard" class="row">
 		<div class="col-md-12">
 			<table class="table table-striped">
@@ -17,31 +17,35 @@
 					<tr>
 						<td scope="col" width="10px"><b>Place</b></td>
 						<td scope="col"><b>{{ get_mode_as_word(capitalize=True) }}</b></td>
-						<td scope="col"><b>Score</b></td>
+						{% for challenge_attr in challenge_attrs %}
+						<td scope="col"><b> {{ challenge_attr.challenge_name }} </b></td>
+						{% endfor %}
 					</tr>
 				</thead>
 				<tbody>
-				{% for standing in standings %}
+				{% for row in rows %}
 					<tr>
 						<th scope="row" class="text-center">{{ loop.index }}</th>
 						<td>
-							<a href="{{ generate_account_url(standing.account_id) }}">
-								{{ standing.name | truncate(50) }}
+							<a href="{{ generate_account_url(row.account_id) }}">
+								{{ row.name | truncate(50) }}
 
-								{% if standing.oauth_id %}
+								{% if row.oauth_id %}
 									{% if Configs.user_mode == 'teams' %}
-									<a href="https://majorleaguecyber.org/t/{{ standing.name }}">
+									<a href="https://majorleaguecyber.org/t/{{ row.name }}">
 										<span class="badge badge-primary">Official</span>
 									</a>
 									{% elif Configs.user_mode == 'users' %}
-									<a href="https://majorleaguecyber.org/u/{{ standing.name }}">
+									<a href="https://majorleaguecyber.org/u/{{ row.name }}">
 										<span class="badge badge-primary">Official</span>
 									</a>
 									{% endif %}
 								{% endif %}
 							</a>
 						</td>
-						<td>{{ standing.score }}</td>
+						{% for score in row.scores %}
+						<td>{{ score }}</td>
+						{% endfor %}
 					</tr>
 				{% endfor %}
 				</tbody>

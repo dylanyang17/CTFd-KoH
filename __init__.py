@@ -6,6 +6,7 @@ from CTFd.plugins import register_plugin_assets_directory, register_user_page_me
 from CTFd.plugins.challenges import CHALLENGE_CLASSES
 from CTFd.plugins.migrations import upgrade
 from CTFd.api import CTFd_API_v1
+from CTFd.utils.helpers import get_infos
 from CTFd.utils.logging import log
 
 from .challenge_type import KoHChallengeType
@@ -31,7 +32,11 @@ def load(app):
     @koh_blueprint.route("/koh-scoreboard/<int:challenge_id>")
     def koh_scoreboard(challenge_id):
         standings = get_koh_standings(challenge_id)
-        return render_template('koh-scoreboard.html', standings=standings)
+        return render_template('koh-scoreboard.html', standings=standings, infos=get_infos())
+
+    @koh_blueprint.route("/koh-scoreboard")
+    def koh_scoreboard_index():
+        return render_template('koh-scoreboard-index.html', infos=get_infos())
 
     app.register_blueprint(koh_blueprint)
     register_user_page_menu_bar('KoH', '/koh-scoreboard')

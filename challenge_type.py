@@ -3,6 +3,7 @@ import requests
 
 from flask import Blueprint
 
+from CTFd.utils.logging import log
 from .standings import clear_koh_standings
 from CTFd.models import Challenges, Solves, db
 from CTFd.plugins.challenges import CHALLENGE_CLASSES, BaseChallenge
@@ -134,9 +135,10 @@ class KoHChallengeType(BaseChallenge):
 
         clear_koh_standings()
 
-        print('Score:', score)
-        
-        # print('file: ', request.form.get('submission'))
-        # super().solve(user, team, challenge, request)
-
-        # KoHChallengeType.calculate_value(challenge)
+        log(
+            "koh",
+            "[{date}] {name} get score {score} on {challenge_name}",
+            name=user.name,
+            challenge_name=challenge.name,
+            score=score
+        )

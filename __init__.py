@@ -87,20 +87,35 @@ def load(app):
 
         return render_template('user/koh-scoreboard-index.html', infos=infos, errors=errors)
 
-    @koh_blueprint.route("/admin/koh-scoreboard/<int:challenge_id>", methods=["GET"])
-    @admins_only
-    def admin_koh_scoreboard(challenge_id):
-        standings = get_koh_standings(challenge_id, admin=True)
-        return render_template('user/koh-scoreboard.html', standings=standings, infos=get_infos(), errors=get_errors())
-
     @koh_blueprint.route("/admin/koh-scoreboard", methods=["GET"])
     @admins_only
-    def admin_koh_scoreboard_index():
+    def admin_koh_scoreboard():
         db.session.query()
-        koh_challenge_attrs = get_koh_challenges_attrs()
-        return render_template('admin/koh-scoreboard-index.html', koh_challenge_attrs=koh_challenge_attrs, infos=get_infos(), errors=get_errors())
+        attrs = get_koh_challenges_attrs()
+        standings_dict = {}
+        for attr in attrs:
+            challenge_id = attr['challenge_id']
+            challenge_name = attr['challenge_name']
+            standings = get_koh_standings(challenge_id, admin=True)
+            # for i, x in enumerate(standings):
+            #     account_id = x.account_id
+            #     name = x.name
+            #     score = x.score
+            #     oauth_id = x.oauth_id
+            #     entry = {
+            #         "pos": i + 1,
+            #         "account_id": x.account_id,
+            #         "account_url": generate_account_url(account_id=x.account_id),
+            #         "account_type": account_type,
+            #         "oauth_id": x.oauth_id,
+            #         "name": x.name,
+            #         "score": int(x.score),
+            #     }
+
+            standings_dict[challenge_name] = standings
+        return render_template('admin/koh-scoreboard.html', standings=standings_dict, infos=get_infos(), errors=get_errors())
 
     app.register_blueprint(koh_blueprint)
     register_user_page_menu_bar('KoH', '/koh-scoreboard')
-    register_admin_plugin_menu_bar('KoH', '/admin/koh-scoreboard')
+    # register_admin_plugin_menu_bar('KoH', '/admin/koh-scoreboard')
     CTFd_API_v1.add_namespace(koh_scoreboard_namespace, path="/plugins/CTFd-KoH/scoreboard")

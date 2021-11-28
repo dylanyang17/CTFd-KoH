@@ -64,8 +64,5 @@
 	<script src="{{ url_for('plugins.koh.assets', path='api.js') }}"></script>
 	<script src="https://cdn.jsdelivr.net/npm/echarts@5.2.2/dist/echarts.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/dayjs.min.js"></script>
-{% endblock %}
-
-{% block entrypoint %}
 	<script defer src="{{ url_for('plugins.koh.assets', path='user/scoreboard.js') }}"></script>
 {% endblock %}
